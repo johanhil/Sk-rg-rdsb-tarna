@@ -30,9 +30,7 @@ function initdialog() {
     ,resizable: false
     ,draggable: false});
     
-    $('#closetext').click(function() {
-        $('#welcome').dialog('close');
-    });
+    $('#closetext').click(closeDialog);
 
     /* setup the auto complete, add boats & jetties */
     var boatsnjetties = [];
@@ -55,6 +53,22 @@ function initdialog() {
             }));
         }
     });
+
+    $('#searchform').submit(function (event) {
+        /* move the map to the position of the marker,
+           close the dialog and done!
+        */
+        var sought = $('#searchinput').val();
+        var soughtmarker = searchmap[sought];
+
+        map.panTo(soughtmarker.getPosition());
+        closeDialog();
+    });
+
+}
+
+function closeDialog() {
+    $('#welcome').dialog('close');
 }
 
 function initmap() {
@@ -80,6 +94,15 @@ function addJetty(index, jetty)
                     title: jetty.name,
                     icon: 'images/jetty.png',
                     zIndex:1});
+
+    var infowindow = new google.maps.InfoWindow({
+        content: '<h2 class="jettyname">' + jetty.name + '</h2>'
+    });
+
+    google.maps.event.addListener(marker, 'click', function() {
+          infowindow.open(map,marker);
+    });
+
     searchmap[jetty.name] = marker;
     marker.setMap(map);
 }
@@ -120,6 +143,22 @@ function addBoat(boat)
                         title: name,
                         icon: 'images/boat.png',
                         zIndex:2});
+
+
+    /* let the user know when the position of the boat was updated */
+    var diff = (new Date().getTime() - boat.lasttime*1000);
+    var description = '<h2 class="boatname">' + name + '</h2><br />' +
+                  'Positionen uppdaterades för <b>' +  Math.ceil(diff/(60*1000)) + ' minuter sen</b>';
+
+    var infowindow = new google.maps.InfoWindow({
+            content: description
+        });
+
+
+    google.maps.event.addListener(marker, 'click', function() {
+        infowindow.open(map,marker);
+    });
+
     marker.setMap(map);
     searchmap[name] = marker;
     // save for removal
@@ -142,9 +181,9 @@ function removeBoats()
         <br />
         <b>Sök efter den båt eller brygga du vill se:</b>
         <br />
-        <form action="#">
+        <form id="searchform" action="#">
             <input type="text" id="searchinput" placeholder="Sök efter båt eller brygga" />
-            <input type="button" value="Visa">
+            <input type="submit" id="searchbutton" value="Visa">
         </form>
         <a href="#" id="closetext">Stäng rutan</a>
     </div>
