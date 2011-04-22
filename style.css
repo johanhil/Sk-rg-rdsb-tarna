@@ -1,0 +1,7 @@
+html { height: 100% }
+body { height: 100%; margin: 0px; padding: 0px }
+#map_canvas { height: 100%; }
+h2 {display: inline}
+p {display: inline}
+
+/* .ui-dialog-titlebar { display: none; } /* hide the bar w/ the x */
