@@ -207,7 +207,6 @@ jetties = [
 {name:"Sticklinge (Lidingö)", lat: "59.39054", lng: "18.10964"},
 {name:"Stora Betsö", lat: "59.427", lng: "18.44901"},
 {name:"Stora Ekholmen", lat: "59.39373", lng: "18.34504"},
-{name:"Stora EkholmenX", lat: "59.39373", lng: "18.34504"},
 {name:"Stora Isskär", lat: "59.42717", lng: "18.44013"},
 {name:"Stora Kalholmen", lat: "59.45525", lng: "18.82245"},
 {name:"Stora Saxaren", lat: "59.45028", lng: "18.48293"},

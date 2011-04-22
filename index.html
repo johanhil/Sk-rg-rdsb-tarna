@@ -10,9 +10,13 @@
 
 <title>Skärgårdsbåtar Live</title> 
 <link rel="stylesheet" href="style.css" type="text/css"></link>
-<script type="text/javascript" src=""></script>
-<script type="text/javascript" src=""></script>
+<script type="text/javascript" src="scripts/jetties.js"></script>
+<script type="text/javascript" src="scripts/boats.js"></script>
 <script type="text/javascript"> 
+var boatmarkers = [];
+var searchmap = {};
+var map = null;
+
 function initialize() {
     initmap();
     initdialog();
@@ -30,8 +34,27 @@ function initdialog() {
         $('#welcome').dialog('close');
     });
 
-    /* setup the auto complete */
+    /* setup the auto complete, add boats & jetties */
+    var boatsnjetties = [];
 
+    $.each(boats, function(i, boat) {
+        boatsnjetties.push(boat.name);
+    });
+
+    $.each(jetties, function(i, jetty) {
+        boatsnjetties.push(jetty.name);
+    });
+    boatsnjetties.sort();
+
+    $('#searchinput').autocomplete({
+        minLength: 1,
+        source: function(req, cb) {
+            var term = req.term.toLowerCase();
+            cb($.grep(boatsnjetties, function (elem, index) {
+                return elem.toLowerCase().indexOf(term) == 0; // == elem.startsWith(term)
+            }));
+        }
+    });
 }
 
 function initmap() {
@@ -41,12 +64,90 @@ function initmap() {
         center: vaxholm,
         mapTypeId: google.maps.MapTypeId.ROADMAP
     }
-    var map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+    map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+
+    // place the jetties and forget about them, they'll never need to be updated
+    $.each(jetties, addJetty);
+
+    // go boats go
+    updateBoats();
 }
+
+function addJetty(index, jetty)
+{
+    var marker = new google.maps.Marker({
+                    position: new google.maps.LatLng(jetty.lat, jetty.lng),
+                    title: jetty.name,
+                    icon: 'images/jetty.png',
+                    zIndex:1});
+    searchmap[jetty.name] = marker;
+    marker.setMap(map);
+}
+
+function updateBoats()
+{
+    /* fetch new data */
+    $.ajax({url: 'http://localhost/~hjon/skargardsbatarna/backend/data.php',      
+            dataType: 'json',
+            success: function (data, text, jqxhr) {
+                var entries = data.entries;
+                
+                // clear out the old markers and put new ones
+                if (entries.length > 0)
+                    removeBoats();
+
+                $.each(entries, function (index, entry) {
+                    addBoat(entry);
+                });
+            }
+        });
+}
+
+function addBoat(boat)
+{
+    var mmsi = boat.mmsi;
+    var name = "";
+
+    // TODO this should be done in a better way. maybe mmsi: name in boats.js 
+    $.each(boats, function (i, b)
+    {
+        if (b.mmsi == mmsi)
+            name = b.name;
+    });
+
+    var marker = new google.maps.Marker({
+                        position: new google.maps.LatLng(boat.lat, boat.lng),
+                        title: name,
+                        icon: 'images/boat.png',
+                        zIndex:2});
+    marker.setMap(map);
+    searchmap[name] = marker;
+    // save for removal
+    boatmarkers.push(marker);
+}
+
+function removeBoats()
+{
+    $.each(boatmarkers, function(index, marker) {
+        marker.setMap(null);
+    });
+}
+
+
 </script> 
 </head> 
 <body onload="initialize()"> 
-    <div id="welcome" title="SKÄRGÅRDSBÅTAR.NU">Här ser du i realtid var Waxholmsbolagets båtar befinner sig!<br /><b>Sök efter den båt eller brygga du vill se:</b><br /><form action="#"><input type="text" id="foo" placeholder="Sök efter båt eller brygga" /><input type="button" value="Visa"></form><a href="#" id="closetext">Stäng rutan</a></div>
+    <div id="welcome" title="SKÄRGÅRDSBÅTAR.NU">
+        Här ser du i realtid var Waxholmsbolagets båtar befinner sig!
+        <br />
+        <b>Sök efter den båt eller brygga du vill se:</b>
+        <br />
+        <form action="#">
+            <input type="text" id="searchinput" placeholder="Sök efter båt eller brygga" />
+            <input type="button" value="Visa">
+        </form>
+        <a href="#" id="closetext">Stäng rutan</a>
+    </div>
     <div id="map_canvas"></div> 
 </body> 
 </html> 
