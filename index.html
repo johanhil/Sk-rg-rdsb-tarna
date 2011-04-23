@@ -62,7 +62,11 @@ function initdialog() {
         var soughtmarker = searchmap[sought];
 
         map.panTo(soughtmarker.getPosition());
+        google.maps.event.trigger(soughtmarker, 'click');
         closeDialog();
+        // stop propagation
+        event.preventDefault();
+        return false;
     });
 
 }
