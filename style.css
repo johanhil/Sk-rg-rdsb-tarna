@@ -4,4 +4,14 @@ body { height: 100%; margin: 0px; padding: 0px }
 h2 {display: inline}
 p {display: inline}
 
+.boatlabel {
+    background-color: white;
+    font-family: "Lucida Grande", "Arial", sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    text-align: center;
+    width: 65px;     
+    border: 1px solid black;
+}
+
 /* .ui-dialog-titlebar { display: none; } /* hide the bar w/ the x */

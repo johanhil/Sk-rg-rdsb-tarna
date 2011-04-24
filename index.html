@@ -8,8 +8,9 @@
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.js"></script>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.11/jquery-ui.js"></script>
 
-<title>Skärgårdsbåtar Live</title> 
+<title>Skärgårdsbåtarna Live</title> 
 <link rel="stylesheet" href="style.css" type="text/css"></link>
+<script type="text/javascript" src="scripts/markerwithlabel.js"></script>
 <script type="text/javascript" src="scripts/jetties.js"></script>
 <script type="text/javascript" src="scripts/boats.js"></script>
 <script type="text/javascript"> 
@@ -119,9 +120,12 @@ function updateBoats()
             success: function (data, text, jqxhr) {
                 var entries = data.entries;
                 
-                // clear out the old markers and put new ones
+                // clear out the old markers/arrows and put new ones
+                // TODO remove the arrows
                 if (entries.length > 0)
+                {
                     removeBoats();
+                }
 
                 $.each(entries, function (index, entry) {
                     addBoat(entry);
@@ -142,17 +146,20 @@ function addBoat(boat)
             name = b.name;
     });
 
-    var marker = new google.maps.Marker({
+    var marker = new MarkerWithLabel({
                         position: new google.maps.LatLng(boat.lat, boat.lng),
                         title: name,
                         icon: 'images/boat.png',
+                        labelContent: name.substring(0, name.indexOf("(båt)")-1), // remove (båt)
+                        labelAnchor: new google.maps.Point(33,0),
+                        labelClass: 'boatlabel',
                         zIndex:2});
-
 
     /* let the user know when the position of the boat was updated */
     var diff = (new Date().getTime() - boat.lasttime*1000);
     var description = '<h2 class="boatname">' + name + '</h2><br />' +
-                  'Positionen uppdaterades för <b>' +  Math.ceil(diff/(60*1000)) + ' minuter sen</b>';
+                  'Positionen uppdaterades för <b>' +  Math.ceil(diff/(60*1000)) + ' minuter sen</b>.<br />'
+                  + 'Båten rör sig i ' + Math.round((0.53995680*boat.speed)) + ' knop.';
 
     var infowindow = new google.maps.InfoWindow({
             content: description
