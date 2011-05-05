@@ -56,5 +56,9 @@ else
 	}
 }
 
+// stop cacheing from occuring (seems to affect FF, but not Chrome). weird.
+// TODO maybe we should cache for 2-3 minutes instead of not cacheing at all.
+header("Cache-Control: no-cache, must-revalidate");
+header("Expires: Sat, 26 Jul 2010 05:00:00 GMT"); 
 echo get_cache_contents();
 ?>
